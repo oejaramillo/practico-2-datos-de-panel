@@ -20,14 +20,7 @@ set seed 1263
 * El dofile está hecho para ser corrido de forma completa, se realizarán
 * todas las simulaciones y al final hay una tabla resumen, no olvidar definir
 * la cantidad de simulaciones y el tamaño de las muestras
-* Lastimosamente el estimador Kiviet requiere mucha cpacidad de computo y puede
-* ser necesario estimarlo de forma separada, el código para simular Kiviet 
-* está separado 
 *-----------------------------------------------------------------------------
-
-* Instalamos los paquetes en caso de no tenerlos
-*ssc install xtabond2, all replace
-*ssc install xtlsdvc, all replace 
 
 * Empezamos por definir lo que vamos a necesitar
 local rep = 1000
@@ -61,6 +54,8 @@ gen modelo_c_g2 = .
 preserve
 
 clear
+
+
 
 
 

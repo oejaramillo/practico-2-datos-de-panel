@@ -18,25 +18,56 @@ scalar gamma2 = 1
 gen xjt = rnormal(0,1)
 gen zjt = rnormal(0,1)
 
-gen psi1 = rnormal(0,1)
-gen psi2 = rnormal(0,1)
-gen psi3 = rnormal(0,1)
-gen psi4 = rnormal(0,1)
-
+gen psi1 = .
+gen psi2 = .
+gen psi3 = .
+gen psi4 = .
+foreach var of varlist psi1 psi2 psi3 psi4 {
+	forvalues r = 1/$N {
+		gen psi = rnormal(0,1)
+		replace `var' = psi if id == `r'
+		drop psi
+	}
+}
 gen epsilonjt = rnormal(0,1)
 gen ujt = 0.6*epsilonjt + 0.8*psi1
 
+bysort id: egen zj = mean(zjt)
+
 *Modelo A
-gen alfaj = psi2 + psi4
-gen cj = psi3 + psi4
+gen alfaja = psi2 + psi4
+gen cja = psi3 + psi4
 
 *Modelo B
-gen alfaj = psi2 + (L.zjt + L2.zjt)/2
-gen cj = psi3 + (L.zjt + L2.zjt)/2
+gen alfajb = psi2 + zj
+gen cjb = psi3 + zj
 
 *Modelo C
-gen alfaj = psi2 + (L.zjt + L2.zjt)/2 + psi4
-gen cj = psi3 + (L.zjt + L2.zjt)/2 + psi4
+gen alfajc = psi2 + zj + psi4
+gen cjc = psi3 + zj + psi4
+
+* Ecuaciones de selección para cada modelo
+gen sjta = gamma1*xjt + gamma2*zjt + alfaja + epsilonjt
+gen sjtb = gamma1*xjt + gamma2*zjt + alfajb + epsilonjt
+gen sjtc = gamma1*xjt + gamma2*zjt + alfajc + epsilonjt
+
+* Indicadoras
+gen sia = (sjta > 0)
+gen sib = (sjtb > 0)
+gen sic = (sjtc > 0)
+
+* Ecuaciones de interés para cada modelo
+gen yjta = beta*xjt + cja + ujt
+gen yjtb = beta*xjt + cjb + ujt
+gen yjtc = beta*xjt + cjc + ujt
+ 
+* Variables perdidas
+gen ya = yjta*sia
+gen yb = yjtb*sib
+gen yc = yjtc*sic
+
+* Probit
+probit 
 
 
 

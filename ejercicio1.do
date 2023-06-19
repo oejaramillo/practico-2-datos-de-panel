@@ -1,11 +1,13 @@
 clear all
+set more off
+set seed 1263
 *Generamos panel 
 global T = 2				// cantidad de periodos 
 global N = 20				// cantidad de individuos 
 global NT = $N * $T	
 set obs $NT
 
-egen id   = seq(), f(1) t($N) b($T)
+egen id = seq(), f(1) t($N) b($T)
 egen tt = seq(), f(1) t($T)
 xtset id tt
 		  
@@ -17,12 +19,12 @@ scalar gamma2 = 1
 *Variables necesarias
 gen xjt = rnormal(0,1)
 gen zjt = rnormal(0,1)
+gen psi1 = rnormal(0,1)
 
-gen psi1 = .
 gen psi2 = .
 gen psi3 = .
 gen psi4 = .
-foreach var of varlist psi1 psi2 psi3 psi4 {
+foreach var of varlist psi2 psi3 psi4 {
 	forvalues r = 1/$N {
 		gen psi = rnormal(0,1)
 		replace `var' = psi if id == `r'
@@ -33,25 +35,27 @@ gen epsilonjt = rnormal(0,1)
 gen ujt = 0.6*epsilonjt + 0.8*psi1
 
 bysort id: egen zj = mean(zjt)
+bysort id: egen xj = mean(xjt)
 
+* Vamos a generar variables diferentes para cada modelo
 *Modelo A
 gen alfaja = psi2 + psi4
 gen cja = psi3 + psi4
 
 *Modelo B
 gen alfajb = psi2 + zj
-gen cjb = psi3 + zj
+gen cjb = psi3 + xj
 
 *Modelo C
 gen alfajc = psi2 + zj + psi4
-gen cjc = psi3 + zj + psi4
+gen cjc = psi3 + xj + psi4
 
 * Ecuaciones de selección para cada modelo
 gen sjta = gamma1*xjt + gamma2*zjt + alfaja + epsilonjt
 gen sjtb = gamma1*xjt + gamma2*zjt + alfajb + epsilonjt
 gen sjtc = gamma1*xjt + gamma2*zjt + alfajc + epsilonjt
 
-* Indicadoras
+* Indicadoras para cada modelo
 gen sia = (sjta > 0)
 gen sib = (sjtb > 0)
 gen sic = (sjtc > 0)
@@ -61,13 +65,38 @@ gen yjta = beta*xjt + cja + ujt
 gen yjtb = beta*xjt + cjb + ujt
 gen yjtc = beta*xjt + cjc + ujt
  
-* Variables perdidas
+* Variables perdidas 
 gen ya = yjta*sia
 gen yb = yjtb*sib
 gen yc = yjtc*sic
 
-* Probit
-probit 
+* Estimación de Wooldridge bajo el enfoque de Chamberlain
+* Probit Modelo A
+probit sia xjt zjt
+predict sia_est, xb
+gen lambdait_a = normalden(sia_est)/normal(sia_est) if sia == 1
+replace lambdait_a = 0 if missing(lambdait_a)
+
+* Probit Modelo B
+probit sib xjt zjt zj
+predict sib_est, xb
+gen lambdait_b = normalden(sib_est)/normal(sib_est) if sib == 1
+replace lambdait_b = 0 if missing(lambdait_b)
+
+* Probit Modelo C
+probit sic xjt zjt zj
+predict sic_est, xb
+gen lambdait_c = normalden(sic_est)/normal(sic_est) if sic == 1
+replace lambdait_c = 0 if missing(lambdait_c)
+
+* Estimación de Woolridge bajo el enfoque de Mundlak
+* Modelo A
+reg ya xjt i.tt#c.lambdait_a if sia == 1
+* Modelo B
+reg yb xjt xj i.tt#c.lambdait_b if sib == 1
+* Modelo C
+reg yc xjt xj i.tt#c.lambdait_c if sic == 1
+
 
 
 

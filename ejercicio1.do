@@ -21,22 +21,22 @@ set obs `rep'
 gen modelo_a_b = .
 gen modelo_a_g1 = .
 gen modelo_a_g2 = .
-gen modelo_a_rmse_sia = .
-gen modelo_a_rmse_ya = .
+gen modelo_a_rmse_si = .
+gen modelo_a_rmse_y = .
 
 *Modelo B
 gen modelo_b_b = .
 gen modelo_b_g1 = .
 gen modelo_b_g2 = .
-gen modelo_a_rmse_sib = .
-gen modelo_a_rmse_yb = .
+gen modelo_b_rmse_si = .
+gen modelo_b_rmse_y = .
 
 *Modelo C
 gen modelo_c_b = .
 gen modelo_c_g1 = .
 gen modelo_c_g2 = .
-gen modelo_a_rmse_sic = .
-gen modelo_a_rmse_yc = .
+gen modelo_c_rmse_si = .
+gen modelo_c_rmse_y = .
 
 
 preserve
@@ -178,23 +178,64 @@ forvalues i = 1(1)`rep' {
 	replace modelo_a_b = `betaa_est' in `i'
 	replace modelo_a_g1 = `gamma1a_est' in `i'
 	replace modelo_a_g2 = `gamma2a_est' in `i'
-	replace modelo_a_rmse_sia = `rmse_a' in `i'
-	replace modelo_a_rmse_ya = `rmse_ya'
+	replace modelo_a_rmse_si = `rmse_a' in `i'
+	replace modelo_a_rmse_y = `rmse_ya'
 
 	*Modelo B
 	replace modelo_b_b = `betab_est' in `i'
 	replace modelo_b_g1 = `gamma1b_est' in `i'
 	replace modelo_b_g2 = `gamma2b_est' in `i'
-	replace modelo_a_rmse_sib = `rmse_b' in `i'
-	replace modelo_a_rmse_yb = `rmse_yb' in `i'
+	replace modelo_b_rmse_si = `rmse_b' in `i'
+	replace modelo_b_rmse_y = `rmse_yb' in `i'
 
 	*Modelo C
 	replace modelo_c_b = `betac_est' in `i'
 	replace modelo_c_g1 = `gamma1c_est' in `i'
 	replace modelo_c_g2 = `gamma2c_est' in `i'
-	replace modelo_a_rmse_sic = `rmse_c' in `i'
-	replace modelo_a_rmse_yc = `rmse_yc' in `i'
+	replace modelo_c_rmse_si = `rmse_c' in `i'
+	replace modelo_c_rmse_y = `rmse_yc' in `i'
 
 	preserve
 	clear
 }
+
+*Desviación media absoluta
+*Modelo A
+egen mad_a_beta = mad(modelo_a_b)
+egen mad_a_gamma1 = mad(modelo_a_g1)
+egen mad_a_gamma2 = mad(modelo_a_g2)
+
+*Modelo B
+egen mad_b_beta = mad(modelo_b_b)
+egen mad_b_gamma1 = mad(modelo_b_g1)
+egen mad_b_gamma2 = mad(modelo_b_g2)
+
+*Modelo C
+egen mad_c_beta = mad(modelo_c_b)
+egen mad_c_gamma1 = mad(modelo_c_g1)
+egen mad_c_gamma2 = mad(modelo_c_g2)
+
+
+*Resumen de los estadísticos
+*beta
+tabstat modelo_a_b modelo_b_b modelo_c_b, statistics(mean, median, sd)
+*gamma1
+tabstat modelo_a_g1 modelo_b_g1 modelo_c_g1, statistics(mean, median, sd)
+*gamma2
+tabstat modelo_a_g2 modelo_b_g2 modelo_c_g2 , statistics(mean, median, sd)
+
+*RMSE
+*Modelo A
+tabstat modelo_a_rmse_si modelo_a_rmse_y , statistics(mean)
+*Modelo B
+tabstat modelo_b_rmse_si modelo_b_rmse_y , statistics(mean)
+*Modelo C
+tabstat modelo_c_rmse_si modelo_c_rmse_y , statistics(mean)
+
+*DMA
+*beta
+tabstat mad_a_beta mad_b_beta mad_c_beta
+*gamma1
+tabstat mad_a_gamma1 mad_b_gamma1 mad_c_gamma1
+*gamma2
+tabstat mad_a_gamma2 mad_b_gamma2 mad_c_gamma2

@@ -56,10 +56,6 @@ preserve
 clear
 
 
-
-
-
-
 *Simulaciones
 forvalues i = 1(1)`rep' {
 		

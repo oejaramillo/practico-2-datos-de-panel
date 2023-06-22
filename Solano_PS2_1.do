@@ -255,6 +255,7 @@ forvalues i = 1 (1) $simulations {
 	predict y_hat, xb
 	gen y_resid = y - y_hat
 
+	
 ** Ahora hacemos 50 replicaciones de bootstrap
 // 	preserve
 

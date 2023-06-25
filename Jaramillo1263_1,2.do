@@ -25,10 +25,11 @@ set seed 1263
 
 *Generamos panel 
 local rep = 1000
-global T = 2				// cantidad de periodos 
+global T = 10				// cantidad de periodos 
 global N = 100				// cantidad de individuos 
 global NT = $N * $T	
-
+ 
+ 
 *Parámetros
 scalar beta = 1 
 scalar gamma1 = 1

@@ -26,7 +26,7 @@ set seed 1263
 *Generamos panel 
 local rep = 1000
 global T = 2				// cantidad de periodos 
-global N = 100				// cantidad de individuos 
+global N = 20				// cantidad de individuos 
 global NT = $N * $T	
 
 *Parámetros
@@ -165,6 +165,7 @@ forvalues i = 1(1)`rep' {
 	reg yb xjt xj i.tt#c.lambdait_b if sib == 1
 		local betab_est = _b[xjt]
 		predict yb_resid, resid
+		
 	* Modelo C
 	reg yc xjt xj i.tt#c.lambdait_c if sic == 1
 		local betac_est = _b[xjt]
@@ -218,7 +219,6 @@ forvalues i = 1(1)`rep' {
 	preserve
 	clear
 }
-gen estimador = 1
 
 *----------------------------------------------------------------------------
 * Generamos un resumen del experimento

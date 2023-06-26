@@ -13,21 +13,22 @@ set seed 1263
 
 *-----------------------------------------------------------------------------
 * Ejercicio 1. Propiedades de muestra finita en paneles no balanceados
-* Caso 2
+* Caso 2. Bootstrap
 *-----------------------------------------------------------------------------
 *-----------------------------------------------------------------------------
 * Instrucciones
 *---------------
-* El dofile está hecho para ser corrido de forma completa, se realizarán
-* todas las simulaciones y al final hay una tabla resumen, no olvidar definir
-* la cantidad de simulaciones y el tamaño de las muestras, en el caso que 
-* ocurra algún problema, se recomienda correr el do hasta el final del loop y
-* luego generar el resumen del experimento en la segunda parte del código.
+* El dofile está hecho para ser corrido en partes, cada literal de forma 
+* separada, calcula los literales a y b y en la parte c realiza el remuestreo 
+* de bootstrap a través de una simulación.
+* Al final hay una tabla resumen de los intervalos de confianza, no olvidar 
+* definir la cantidad de simulaciones en la parte c y el tamaño de las muestras
+* en la parte inicial.
 *-----------------------------------------------------------------------------
 
 *Generamos panel 
 global T = 10				// cantidad de periodos 
-global N = 20				// cantidad de individuos 
+global N = 100				// cantidad de individuos 
 global NT = $N * $T	
  
 *Parámetros
@@ -104,11 +105,13 @@ gen yc = yjtc*sic
 * Estimación de Wooldridge de la ecuación de selección
 * Probit Modelo A
 probit sia xjt zjt
+* Matrices para guardar los intervalos de confianza
 matrix probita = r(table)
 matrix ci_gamma1_a = J(2,2,.)
-*matrix ci_gamma1_a[1,1] = (probita[5, 1], probita[6, 1])
-*matrix ci_gamma2_a = J(2,2,.)
-*matrix ci_gamma2_a[1,2] = (probita[5, 2], probita[6, 2])
+matrix ci_gamma1_a[1,1] = (probita[5, 1], probita[6, 1])
+matrix ci_gamma2_a = J(2,2,.)
+matrix ci_gamma2_a[1,1] = (probita[5, 2], probita[6, 2])
+*--------------------------------------------------------	
 	scalar gamma1a_est = _b[xjt]
 	scalar gamma2a_est = _b[zjt]
 	predict sia_est, xb
@@ -118,9 +121,13 @@ replace lambdait_a = 0 if missing(lambdait_a)
 
 * Probit Modelo B
 probit sib xjt zjt zj
-*matrix probitb = r(table)
-*matrix ci_gamma1_b = (probitb[5, 1], probitb[6, 1])
-*matrix ci_gamma2_b = (probitb[5, 2], probitb[6, 2])
+* Matrices para guardar los intervalos de confianza
+matrix probitb = r(table)
+matrix ci_gamma1_b = J(2,2,.)
+matrix ci_gamma1_b[1,1] = (probitb[5, 1], probitb[6, 1])
+matrix ci_gamma2_b = J(2,2,.)
+matrix ci_gamma2_b[1,1] = (probitb[5, 2], probitb[6, 2])
+*--------------------------------------------------------	
 	scalar gamma1b_est = _b[xjt]
 	scalar gamma2b_est = _b[zjt]
 	predict sib_est, xb
@@ -130,9 +137,13 @@ replace lambdait_b = 0 if missing(lambdait_b)
 
 * Probit Modelo C
 probit sic xjt zjt zj
-*matrix probitc = r(table)
-*matrix ci_gamma1_c = (probitc[5, 1], probitc[6, 1])
-*matrix ci_gamma2_c = (probitc[5, 2], probitc[6, 2])
+* Matrices para guardar los intervalos de confianza
+matrix probitc = r(table)
+matrix ci_gamma1_c = J(2,2,.)
+matrix ci_gamma1_c[1,1] = (probitc[5, 1], probitc[6, 1])
+matrix ci_gamma2_c = J(2,2,.)
+matrix ci_gamma2_c[1,1] = (probitc[5, 2], probitc[6, 2])
+*--------------------------------------------------------	
 	scalar gamma1c_est = _b[xjt]
 	scalar gamma2c_est = _b[zjt]
 	predict sic_est, xb
@@ -143,22 +154,31 @@ replace lambdait_c = 0 if missing(lambdait_c)
 * Estimación de Woolridge de la ecuación de interés
 * Modelo A
 reg ya xjt i.tt#c.lambdait_a if sia == 1
-*matrix woolda = r(table)
-*matrix ci_beta_a = (woolda[5, 1], woolda[6, 1])
+* Matrices para guardar los intervalos de confianza
+matrix woolda = r(table)
+matrix ci_beta_a = J(2,2,.)
+matrix ci_beta_a[1,1] = (woolda[5, 1], woolda[6, 1])
+*--------------------------------------------------------	
 	scalar betaa_est = _b[xjt]
 	predict ya_resid, resid
 
 * Modelo B
 reg yb xjt xj i.tt#c.lambdait_b if sib == 1
-*matrix wooldb = r(table)
-*matrix ci_beta_b = (wooldb[5, 1], wooldb[6, 1])
+* Matrices para guardar los intervalos de confianza
+matrix wooldb = r(table)
+matrix ci_beta_b = J(2,2,.)
+matrix ci_beta_b[1,1] = (wooldb[5, 1], wooldb[6, 1])
+*--------------------------------------------------------	
 	scalar betab_est = _b[xjt]
 	predict yb_resid, resid
 
 * Modelo C
 reg yc xjt xj i.tt#c.lambdait_c if sic == 1
-*matrix wooldc = r(table)
-*matrix ci_beta_c = (wooldc[5, 1], wooldc[6, 1])
+* Matrices para guardar los intervalos de confianza
+matrix wooldc = r(table)
+matrix ci_beta_c = J(2,2,.)
+matrix ci_beta_c[1,1] = (wooldc[5, 1], wooldc[6, 1])
+*--------------------------------------------------------	
 	scalar betac_est = _b[xjt]
 	predict yc_resid, resid
 	
@@ -168,11 +188,12 @@ reg yc xjt xj i.tt#c.lambdait_c if sic == 1
 *------------------------------------
 * Opciones de la simulación
 global sim = 1000					// cantidad de simulaciones
-global modelo = 1				// Elegimos el modelo a simular (A=1, B=2 o C=3)
+global modelo = 3				// Elegimos el modelo a simular (A=1, B=2 o C=3)
 
 * Programa de bootstrap
 program drop _all
 
+* Programa diferente para cada modelo, es necesario correr todos
 *Modelo A
 {
 program onebootrep_a, rclass
@@ -340,106 +361,93 @@ else {
 	display "*************************** Elegir un modelo correcto A=1, B=2 o C=3 ***************************"
 }
 *------------------------------------------------------------------------
+*------------------------------------------------------------------------
 * Buscamos el intervalo de confianza  para bootstrap
 if $modelo == 1 {
 	sort a_gamma1
 	centile a_gamma1, centile(2.5 97.5)
-	matrix a_gamma1 = J(1, 2, .)
-	matrix a_gamma1[1, 1] = r(lb_1)
-	matrix a_gamma1[1, 2] = r(ub_2)
+	matrix ci_gamma1_a[2,1] = r(ub_1)
+	matrix ci_gamma1_a[2,2] = r(ub_2)
 	
 	sort a_gamma2
 	centile a_gamma2, centile(2.5 97.5)
-	matrix a_gamma2 = J(1, 2, .)
-	matrix a_gamma2[1, 1] = r(lb_1)
-	matrix a_gamma2[1, 2] = r(ub_2)
+	matrix ci_gamma2_a[2,1] = r(ub_1)
+	matrix ci_gamma2_a[2,2] = r(ub_2)
 	
 	sort a_beta
 	centile a_beta, centile(2.5 97.5)
-	matrix a_beta = J(1, 2, .)
-	matrix a_beta[1, 1] = r(lb_1)
-	matrix a_beta[1, 2] = r(ub_2)
+	matrix ci_beta_a[2,1] = r(ub_1)
+	matrix ci_beta_a[2,2] = r(ub_2)
 }
 if $modelo == 2 {
 	sort b_gamma1
 	centile b_gamma1, centile(2.5 97.5)
-	matrix b_gamma1 = J(1, 2, .)
-	matrix b_gamma1[1, 1] = r(lb_1)
-	matrix b_gamma1[1, 2] = r(ub_2)
+	matrix ci_gamma1_b[2,1] = r(ub_1)
+	matrix ci_gamma1_b[2,2] = r(ub_2)
 	
 	sort b_gamma2
 	centile b_gamma2, centile(2.5 97.5)
-	matrix b_gamma2 = J(1, 2, .)
-	matrix b_gamma2[1, 1] = r(lb_1)
-	matrix b_gamma2[1, 2] = r(ub_2)
+	matrix ci_gamma2_b[2,1] = r(ub_1)
+	matrix ci_gamma2_b[2,2] = r(ub_2)
 	
 	sort b_beta
 	centile b_beta, centile(2.5 97.5)
-	matrix b_beta = J(1, 2, .)
-	matrix b_beta[1, 1] = r(lb_1)
-	matrix b_beta[1, 2] = r(ub_2)
+	matrix ci_beta_b[2,1] = r(ub_1)
+	matrix ci_beta_b[2,2] = r(ub_2)
 }
 if $modelo == 3 {
 	sort c_gamma1
 	centile c_gamma1, centile(2.5 97.5)
-	matrix c_gamma1 = J(1, 2, .)
-	matrix c_gamma1[1, 1] = r(lb_1)
-	matrix c_gamma1[1, 2] = r(ub_2)
+	matrix ci_gamma1_c[2,1] = r(ub_1)
+	matrix ci_gamma1_c[2,2] = r(ub_2)
 	
 	sort c_gamma2
 	centile c_gamma2, centile(2.5 97.5)
-	matrix c_gamma2 = J(1, 2, .)
-	matrix c_gamma2[1, 1] = r(lb_1)
-	matrix c_gamma2[1, 2] = r(ub_2)
+	matrix ci_gamma2_c[2,1] = r(ub_1)
+	matrix ci_gamma2_c[2,2] = r(ub_2)
 	
 	sort c_beta
 	centile c_beta, centile(2.5 97.5)
-	matrix c_beta = J(1, 2, .)
-	matrix c_beta[1, 1] = r(lb_1)
-	matrix c_beta[1, 2] = r(ub_2)
+	matrix ci_beta_c[2,1] = r(ub_1)
+	matrix ci_beta_c[2,2] = r(ub_2)
 }
 *Comparamos los intervalos de confianza para cada estimador y el modelo elegido
 if $modelo == 1 {
-matrix gamma1 = J(2, 2, .)
-matrix gamma1[1, 1] = ci_gamma1_a[1, 1]
-matrix gamma1[1, 2] = ci_gamma1_a[1, 2]
-
-matrix gamma1[2, 1] = ci_gamma1_a[1, 2]
-matrix results[2, 2] = a_gamma1[6, 1]
-
-matrix rownames results = "Matriz 1" "Matriz 2"
-matrix colnames results = "Valor 1" "Valor 2"
-
-matrix list results
-
-
-	matrix list ci_gamma1_a
-	matrix list a_gamma1
+	matrix rownames ci_gamma1_a = "Real" "Boootstrap"
+	matrix colnames ci_gamma1_a = "Inferior" "Superior"
+	matlist ci_gamma1_a
 	
-	matrix list ci_gamma2_a
-	matrix list a_gamma2
+	matrix rownames ci_gamma2_a = "Real" "Boootstrap"
+	matrix colnames ci_gamma2_a = "Inferior" "Superior"
+	matlist ci_gamma2_a
 	
-	matrix list ci_beta_a
-	matrix list a_beta
+	matrix rownames ci_beta_a = "Real" "Boootstrap"
+	matrix colnames ci_beta_a = "Inferior" "Superior"
+	matlist ci_beta_a
 }
 if $modelo == 2 {
-	matrix list ci_gamma1_b
-	matrix list b_gamma1
+	matrix rownames ci_gamma1_b = "Real" "Boootstrap"
+	matrix colnames ci_gamma1_b = "Inferior" "Superior"
+	matlist ci_gamma1_b
 	
-	matrix list ci_gamma2_b
-	matrix list b_gamma2
+	matrix rownames ci_gamma2_b = "Real" "Boootstrap"
+	matrix colnames ci_gamma2_b = "Inferior" "Superior"
+	matlist ci_gamma2_b
 	
-	matrix list ci_beta_b
-	matrix list b_beta
+	matrix rownames ci_beta_b = "Real" "Boootstrap"
+	matrix colnames ci_beta_b = "Inferior" "Superior"
+	matlist ci_beta_b
 }
 if $modelo == 3 {
-	matrix list ci_gamma1_c
-	matrix list c_gamma1
+	matrix rownames ci_gamma1_c = "Real" "Boootstrap"
+	matrix colnames ci_gamma1_c = "Inferior" "Superior"
+	matlist ci_gamma1_c
 	
-	matrix list ci_gamma2_c
-	matrix list c_gamma2
+	matrix rownames ci_gamma2_c = "Real" "Boootstrap"
+	matrix colnames ci_gamma2_c = "Inferior" "Superior"
+	matlist ci_gamma2_c
 	
-	matrix list ci_beta_c
-	matrix list c_beta
+	matrix rownames ci_beta_c = "Real" "Boootstrap"
+	matrix colnames ci_beta_c = "Inferior" "Superior"
+	matlist ci_beta_c
 }
-

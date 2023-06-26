@@ -1,0 +1,54 @@
+-------------------------------------------------------------------------------
+       log:  C:\mitbook\textfiles\keane.des
+  log type:  text
+ opened on:  22 Apr 2002, 10:52:02
+
+. ds
+id        numyrs    year      choice    wage      educ      expwc     expbc    
+expser    manuf     black     lwage     y81       y82       y83       y84      
+y85       y86       y87       enroll    employ    attrit    exper     expersq  
+status    
+
+. des
+
+Contains data from keane.dta
+  obs:        12,723                          
+ vars:            25                          6 Sep 1999 22:41
+ size:       458,028 (55.0% of memory free)
+-------------------------------------------------------------------------------
+              storage  display     value
+variable name   type   format      label      variable label
+-------------------------------------------------------------------------------
+id              int    %9.0g                  identifier
+numyrs          byte   %9.0g                  number of years in sample
+year            byte   %9.0g                  81 to 87
+choice          byte   %9.0g                  sch=1,home=2,wc=3,bc=4,serv=5
+wage            float  %9.0g                  annual wage, 1987 $
+educ            byte   %9.0g                  years of schooling
+expwc           byte   %9.0g                  experience in white collar (wc)
+expbc           byte   %9.0g                  experience in blue collar (bc)
+expser          byte   %9.0g                  experience in services (serv)
+manuf           byte   %9.0g                  =1 if in manufacturing
+black           byte   %9.0g                  =1 if black
+lwage           float  %9.0g                  log(wage)
+y81             byte   %9.0g                  =1 if year == 81
+y82             byte   %9.0g                  
+y83             byte   %9.0g                  
+y84             byte   %9.0g                  
+y85             byte   %9.0g                  
+y86             byte   %9.0g                  
+y87             byte   %9.0g                  
+enroll          byte   %9.0g                  =1 if choice == 1
+employ          byte   %9.0g                  =1 if choice == 3, 4, or 5
+attrit          byte   %9.0g                  =1 if attrit in next year
+exper           byte   %9.0g                  expwc + expbc + expser
+expersq         byte   %9.0g                  exper^2
+status          byte   %9.0g                  sch=1,home=2,work=3
+-------------------------------------------------------------------------------
+Sorted by:  id  year  
+
+. log close
+       log:  C:\mitbook\textfiles\keane.des
+  log type:  text
+ closed on:  22 Apr 2002, 10:53:14
+-------------------------------------------------------------------------------
